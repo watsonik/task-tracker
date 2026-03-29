@@ -28,8 +28,8 @@ jobs:
       - name: Install backend deps
         working-directory: ${{ github.workspace }}
         run: |
-          rm -rf node_modules
-          npm install --build-from-source
+          npm install
+          npm rebuild sqlite3 --build-from-source
 
       # ✅ Frontend deps
       - name: Install frontend deps
