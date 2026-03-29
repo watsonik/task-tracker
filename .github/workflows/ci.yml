@@ -21,28 +21,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "npm"
+          cache: npm
 
-      # Backend deps
+      # ✅ Backend deps
       - name: Install backend deps
-        working-directory: ${{ github.workspace }}/task-tracker
-        run: npm ci
+        working-directory: ${{ github.workspace }}
+        run: npm install
 
-      # Frontend deps
+      # ✅ Frontend deps
       - name: Install frontend deps
-        working-directory: ${{ github.workspace }}/task-tracker/web
-        run: npm ci
+        working-directory: ${{ github.workspace }}/web
+        run: npm install
 
       - name: Install Playwright browsers
+        working-directory: ${{ github.workspace }}
         run: npx playwright install --with-deps
 
-      # Start backend
+      # ✅ Start backend
       - name: Start backend
+        working-directory: ${{ github.workspace }}
         run: |
           nohup npm run dev > backend.log 2>&1 &
           echo $! > backend.pid
 
       - name: Wait for backend
+        working-directory: ${{ github.workspace }}
         run: |
           for i in {1..40}; do
             if curl -s http://localhost:3000/health | grep -q '"ok"'; then
@@ -52,17 +55,17 @@ jobs:
             echo "Waiting backend..."
             sleep 1
           done
-          echo "Backend failed"
           exit 1
 
-      # Start frontend
+      # ✅ Start frontend
       - name: Start frontend
-        working-directory: web
+        working-directory: ${{ github.workspace }}/web
         run: |
           nohup npm run dev > ../frontend.log 2>&1 &
           echo $! > ../frontend.pid
 
       - name: Wait for frontend
+        working-directory: ${{ github.workspace }}
         run: |
           for i in {1..40}; do
             if curl -s http://localhost:5173 | grep -q "<"; then
@@ -72,10 +75,10 @@ jobs:
             echo "Waiting frontend..."
             sleep 1
           done
-          echo "Frontend failed"
           exit 1
 
       - name: Run E2E tests
+        working-directory: ${{ github.workspace }}
         run: npx playwright test --project=chromium-headless
 
       - name: Upload report
@@ -87,6 +90,7 @@ jobs:
 
       - name: Cleanup
         if: always()
+        working-directory: ${{ github.workspace }}
         run: |
           kill $(cat backend.pid) || true
           kill $(cat frontend.pid) || true
