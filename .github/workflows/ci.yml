@@ -12,6 +12,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug workspace structure
+        run: |
+          echo "workspace dir = ${{ github.workspace }}"
+          ls -al ${{ github.workspace }}
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
