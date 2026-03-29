@@ -1,27 +1,22 @@
 const { test, expect } = require("@playwright/test");
-
 test("signup → add task → toggle → delete", async ({ page }) => {
-    await page.goto('http://your-app-url/signup');
-    await page.fill('input[name="email"]', 'user@example.com');
-    await page.fill('input[name="password"]', 'password123');
-    await page.click('text=Sign up');
-    await expect(page.locator('h1')).toHaveText('Tasks');
-
-    await page.fill('input[name="new-task"]', 'New task');
-    await page.click('text=Add');
-    const item = page.locator('text=New task');
+    await page.goto("/");
+    const email = `u${Date.now()}@example.com`;
+    await page.getByPlaceholder("email").fill(email);
+    await page.getByPlaceholder("password").fill("secret123");
+    await page.getByRole("button", { name: "Sign up" }).click();
+    await expect(page.getByRole("heading", { name: "Tasks" })).toBeVisible();
+    await page.getByPlaceholder("New task").fill("Interview prep");
+    await page.getByRole("button", { name: "Add" }).click();
+    const item = page.locator("li", { hasText: "Interview prep" });
     await expect(item).toBeVisible();
-
     const checkbox = item.locator('input[type="checkbox"]');
     await expect(checkbox).not.toBeChecked();
-
-    await Promise.all([
-        page.waitForResponse('**/tasks/*', { method: 'PATCH' }),
-        await checkbox.click(),
-    ]);
+    const patchOk = page.waitForResponse((res) => res.request().method() === "PATCH" && /\/api\/tasks\/\d+$/.test(res.url()) && res.status() === 200);
+    await checkbox.click();
+    await patchOk;
     await expect(checkbox).toBeChecked();
-    await expect(item).toHaveCSS('text-decoration', 'line-through');
-
-    await page.click('text=Delete');
-    await expect(page.locator('text=New task')).toHaveCount(0);
+    await expect(item.locator("span")).toHaveCSS("text-decoration-line", "line-through");
+    await item.getByRole("button", { name: "Delete" }).click();
+    await expect(item).toHaveCount(0);
 });
