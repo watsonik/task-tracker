@@ -97,7 +97,9 @@ jobs:
 
       - name: Run E2E tests
         working-directory: ${{ github.workspace }}
-        run: npx playwright test --project=chromium-headless
+        run: |
+          echo "Running E2E tests in $(pwd)"
+          npx playwright test --project=chromium-headless
 
       - name: Upload report
         if: always()
