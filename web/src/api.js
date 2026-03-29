@@ -24,7 +24,6 @@ export const Tasks = {
   list: () => api.get("/tasks").then((res) => res.data),
   create: (title) => api.post("/tasks", { title }).then((res) => res.data),
   update: (id, data) => api.patch(`/tasks/${id}`, data).then((res) => res.data),
-
   remove: (id) => api.delete(`/tasks/${id}`),
 };
 

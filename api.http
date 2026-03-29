@@ -1,0 +1,27 @@
+@base=http://localhost:3000
+@token={{$dotenv TOKEN}}
+
+### Health
+GET {{base}}/health
+
+### Sign up
+POST {{base}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "email": "b@b.com",
+  "password": "secret123"
+}
+
+### Sign in
+POST {{base}}/api/auth/signin
+Content-Type: application/json
+
+{
+  "email": "b@b.com",
+  "password": "secret123"
+}
+
+### List tasks
+GET {{base}}/api/tasks
+Authorization: Bearer {{token}}
