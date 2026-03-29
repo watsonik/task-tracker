@@ -43,7 +43,7 @@ jobs:
       - name: Start backend
         working-directory: ${{ github.workspace }}
         run: |
-          nohup npm run dev > backend.log 2>&1 &
+          nohup npm start > backend.log 2
           echo $! > backend.pid
 
       - name: Wait for backend
@@ -58,6 +58,13 @@ jobs:
             sleep 1
           done
           exit 1
+
+      - name: Print backend log on failure
+        if: failure()
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "===== BACKEND LOG ====="
+          cat backend.log || true
 
       # ✅ Start frontend
       - name: Start frontend
