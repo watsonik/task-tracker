@@ -20,12 +20,12 @@ jobs:
 
       # Backend deps
       - name: Install backend deps
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/task-tracker
         run: npm ci
 
       # Frontend deps
       - name: Install frontend deps
-        working-directory: web
+        working-directory: ${{ github.workspace }}/task-tracker/web
         run: npm ci
 
       - name: Install Playwright browsers
