@@ -24,11 +24,12 @@ jobs:
           cache: npm
 
       # ✅ Backend deps
+
       - name: Install backend deps
         working-directory: ${{ github.workspace }}
         run: |
-          npm install --force
-          npm rebuild sqlite3
+          rm -rf node_modules
+          npm install --build-from-source
 
       # ✅ Frontend deps
       - name: Install frontend deps
@@ -42,10 +43,11 @@ jobs:
           playwright install --with-deps
 
       # ✅ Start backend
+
       - name: Start backend
         working-directory: ${{ github.workspace }}
         run: |
-          nohup npm start > backend.log 2
+          nohup npm start > backend.log 2>&1 &
           echo $! > backend.pid
 
       - name: Wait for backend
