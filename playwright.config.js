@@ -1,7 +1,7 @@
 // playwright.config.js
-import { defineConfig, devices } from "@playwright/test";
+const { defineConfig, devices } = require("@playwright/test");
 
-export default defineConfig({
+module.exports = defineConfig({
   testDir: "./tests-e2e",
   timeout: 30_000,
   use: {
