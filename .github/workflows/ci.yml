@@ -99,7 +99,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           echo "Running E2E tests in $(pwd)"
-          npx playwright test --project=chromium-headless
+          npx playwright test --config=playwright.config.cjs --project=chromium-headless
 
       - name: Upload report
         if: always()
