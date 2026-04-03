@@ -2,10 +2,10 @@
 const { defineConfig, devices } = require("@playwright/test");
 
 module.exports = defineConfig({
-  // testDir: "./tests-e2e",
-  // testMatch: "**/*.spec.cjs",
-  testMatch: "tests-e2e/**/*.spec.cjs",
-  testIgnore: ["**/playwright.config.cjs"],
+  testDir: "./tests-e2e",
+  testMatch: "**/*.spec.js",
+  // testMatch: "tests-e2e/**/*.spec.cjs",
+  // testIgnore: ["**/playwright.config.cjs"],
   timeout: 30_000,
   use: {
     baseURL: "http://localhost:5173", //наш Vite фронтенд
