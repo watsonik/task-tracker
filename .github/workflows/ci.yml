@@ -95,6 +95,12 @@ jobs:
           done
           exit 1
 
+      - name: Debug tests-e2e contents
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "--- tests-e2e directory contents ---"
+          ls -al tests-e2e
+
       - name: Run E2E tests
         working-directory: ${{ github.workspace }}
         run: |
