@@ -107,6 +107,65 @@ jobs:
           echo "--- FULL PATH of test file ---"
           find . -name "auth-and-crud.spec.cjs" -print0 | xargs -0 ls -l
 
+      - name: Inspect config file type
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "--- CONFIG FILE TYPE ---"
+          file playwright.config.cjs
+
+      #====================================================
+      # 🔍 FULL PLAYWRIGHT/FILESYSTEM/ENV DIAGNOSTICS BLOCK
+      #====================================================
+
+      - name: Debug PATH / Node version / NPM version
+        run: |
+          echo "Node version:"
+          node -v
+          echo "NPM version:"
+          npm -v
+          echo "PATH:"
+          echo $PATH
+
+      - name: Debug installed playwright versions
+        run: |
+          echo "npm ls @playwright/test:"
+          npm ls @playwright/test || true
+          echo "npm ls playwright:"
+          npm ls playwright || true
+
+      - name: Debug config file type
+        run: |
+          echo "--- CONFIG FILE TYPE ---"
+          file playwright.config.cjs || true
+          echo "--- CONFIG CONTENT START ---"
+          sed -n '1,200p' playwright.config.cjs
+          echo "--- CONFIG CONTENT END ---"
+
+      - name: Debug test file type
+        run: |
+          echo "--- TEST FILE TYPE ---"
+          file tests-e2e/auth-and-crud.spec.cjs || true
+          echo "--- TEST FILE CONTENT START ---"
+          sed -n '1,200p' tests-e2e/auth-and-crud.spec.cjs
+          echo "--- TEST FILE CONTENT END ---"
+
+      - name: Debug working directory
+        run: |
+          echo "Running E2E tests in $(pwd)"
+          echo "--- Files:"
+          ls -al
+          echo "--- tests-e2e directory:"
+          ls -al tests-e2e
+
+      - name: Debug where Playwright thinks config is
+        run: |
+          echo "--- WHICH PLAYWRIGHT ---"
+          which playwright || true
+          echo "--- IMPORT RESOLUTION ---"
+          node -e "console.log(require.resolve('@playwright/test'))" || true
+          echo "--- Check DEFAULT config detection ---"
+          npx playwright test --list 2>&1 || true
+
       - name: Run E2E tests
         working-directory: ${{ github.workspace }}
         run: |
