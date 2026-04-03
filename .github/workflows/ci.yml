@@ -101,6 +101,12 @@ jobs:
           echo "--- tests-e2e directory contents ---"
           ls -al tests-e2e
 
+      - name: Debug test file info
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "--- FULL PATH of test file ---"
+          find . -name "auth-and-crud.spec.cjs" -print0 | xargs -0 ls -l
+
       - name: Run E2E tests
         working-directory: ${{ github.workspace }}
         run: |
