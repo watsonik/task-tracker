@@ -39,8 +39,8 @@ jobs:
       - name: Install Playwright browsers
         working-directory: ${{ github.workspace }}
         run: |
-          npx playwright install-deps
-          npx playwright install chromium
+          node ./node_modules/playwright-core/cli.js install-deps
+          node ./node_modules/playwright-core/cli.js install chromium
 
       # ✅ Start backend
 
