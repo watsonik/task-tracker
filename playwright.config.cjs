@@ -32,9 +32,9 @@ module.exports = defineConfig({
         ...devices["Desktop Chrome"],
         headless: true,
         launchOptions: { slowMo: 0 },
-        trace: "retain-on-failure", // можно оставить on / retain-on-failure
-        video: "retain-on-failure",
-        screenshot: "only-on-failure",
+        trace: "on", // можно оставить on / retain-on-failure
+        video: "on",
+        screenshot: "on",
       },
     },
   ],
