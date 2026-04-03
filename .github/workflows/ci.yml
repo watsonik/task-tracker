@@ -102,10 +102,10 @@ jobs:
           ls -al tests-e2e
 
       - name: Run E2E tests
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ github.workspace }}/task-tracker
         run: |
           echo "Running E2E tests in $(pwd)"
-          npx playwright test --config=playwright.config.cjs --project=chromium-headless
+          npx playwright
 
       - name: Upload report
         if: always()
