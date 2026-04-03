@@ -102,7 +102,7 @@ jobs:
           ls -al tests-e2e
 
       - name: Run E2E tests
-        working-directory: ${{ github.workspace }}/task-tracker
+        working-directory: ${{ github.workspace }}
         run: |
           echo "Running E2E tests in $(pwd)"
           npx playwright
