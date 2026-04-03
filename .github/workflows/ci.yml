@@ -157,20 +157,11 @@ jobs:
           echo "--- tests-e2e directory:"
           ls -al tests-e2e
 
-      - name: Debug where Playwright thinks config is
-        run: |
-          echo "--- WHICH PLAYWRIGHT ---"
-          which playwright || true
-          echo "--- IMPORT RESOLUTION ---"
-          node -e "console.log(require.resolve('@playwright/test'))" || true
-          echo "--- Check DEFAULT config detection ---"
-          npx playwright test --list 2>&1 || true
-
       - name: Run E2E tests
         working-directory: ${{ github.workspace }}
         run: |
           echo "Running E2E tests in $(pwd)"
-          npx playwright test --config=playwright.config.cjs --project=chromium-headless
+          node ./node_modules/@playwright/test/cli.js test --config=playwright.config.cjs --project=chromium-headless
 
       - name: Upload report
         if: always()
