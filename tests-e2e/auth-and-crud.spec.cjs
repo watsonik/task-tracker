@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+const { test, expect } = require("@playwright/test");
 test("signup → add task → toggle → delete", async ({ page }) => {
   await page.goto("/");
   const email = `u${Date.now()}@example.com`;
