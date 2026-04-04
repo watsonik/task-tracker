@@ -3,19 +3,22 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch: # ✅ ручной запуск
+  schedule:
+    - cron: "0 3 * * *" # ✅ ежедневный запуск (03:00 UTC → 06:00 Minsk)
+
+# -------------------------------
+# ✅ Reusable steps (YAML anchors)
+# -------------------------------
 
 jobs:
   e2e:
     runs-on: ubuntu-latest
 
-    steps:
+    # 👇 Общие шаги вынесены в anchor &e2e-steps
+    steps: &e2e-steps
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Debug workspace structure
-        run: |
-          echo "workspace dir = ${{ github.workspace }}"
-          ls -al ${{ github.workspace }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -23,27 +26,34 @@ jobs:
           node-version: 20
           cache: npm
 
+      # -------------------------------
       # ✅ Backend deps
-
+      # -------------------------------
       - name: Install backend deps
         working-directory: ${{ github.workspace }}
         run: |
           npm install
           npm rebuild sqlite3 --build-from-source
 
+      # -------------------------------
       # ✅ Frontend deps
+      # -------------------------------
       - name: Install frontend deps
         working-directory: ${{ github.workspace }}/web
         run: npm install --force
 
+      # -------------------------------
+      # ✅ Playwright browsers (LOCAL)
+      # -------------------------------
       - name: Install Playwright browsers
         working-directory: ${{ github.workspace }}
         run: |
           node ./node_modules/playwright-core/cli.js install-deps
           node ./node_modules/playwright-core/cli.js install chromium
 
+      # -------------------------------
       # ✅ Start backend
-
+      # -------------------------------
       - name: Start backend
         working-directory: ${{ github.workspace }}
         run: |
@@ -54,17 +64,17 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           for i in {1..40}; do
-            if curl -s http://localhost:3000/health 2>/dev/null | grep -q '"ok"'; then
+            if curl -s http://localhost:3000/health | grep -q '"ok"'; then
               echo "Backend OK"
               exit 0
-            elif curl -s http://localhost:3000 2>/dev/null; then
-              echo "Backend responding (port OK)"
+            elif curl -s http://localhost:3000 >/dev/null 2>&1; then
+              echo "Backend responding (no health endpoint)"
               exit 0
             fi
-            echo "Waiting backend... (attempt $i/40)"
+            echo "Waiting backend ($i/40)..."
             sleep 1
           done
-          echo "Backend failed to start"
+          echo "Backend failed"
           cat backend.log || true
           exit 1
 
@@ -75,7 +85,9 @@ jobs:
           echo "===== BACKEND LOG ====="
           cat backend.log || true
 
+      # -------------------------------
       # ✅ Start frontend
+      # -------------------------------
       - name: Start frontend
         working-directory: ${{ github.workspace }}/web
         run: |
@@ -90,79 +102,25 @@ jobs:
               echo "Frontend OK"
               exit 0
             fi
-            echo "Waiting frontend..."
+            echo "Waiting frontend ($i/40)..."
             sleep 1
           done
           exit 1
 
-      - name: Debug tests-e2e contents
-        working-directory: ${{ github.workspace }}
-        run: |
-          echo "--- tests-e2e directory contents ---"
-          ls -al tests-e2e
-
-      - name: Debug test file info
-        working-directory: ${{ github.workspace }}
-        run: |
-          echo "--- FULL PATH of test file ---"
-          find . -name "auth-and-crud.spec.cjs" -print0 | xargs -0 ls -l
-
-      - name: Inspect config file type
-        working-directory: ${{ github.workspace }}
-        run: |
-          echo "--- CONFIG FILE TYPE ---"
-          file playwright.config.cjs
-
-      #====================================================
-      # 🔍 FULL PLAYWRIGHT/FILESYSTEM/ENV DIAGNOSTICS BLOCK
-      #====================================================
-
-      - name: Debug PATH / Node version / NPM version
-        run: |
-          echo "Node version:"
-          node -v
-          echo "NPM version:"
-          npm -v
-          echo "PATH:"
-          echo $PATH
-
-      - name: Debug installed playwright versions
-        run: |
-          echo "npm ls @playwright/test:"
-          npm ls @playwright/test || true
-          echo "npm ls playwright:"
-          npm ls playwright || true
-
-      - name: Debug config file type
-        run: |
-          echo "--- CONFIG FILE TYPE ---"
-          file playwright.config.cjs || true
-          echo "--- CONFIG CONTENT START ---"
-          sed -n '1,200p' playwright.config.cjs
-          echo "--- CONFIG CONTENT END ---"
-
-      - name: Debug test file type
-        run: |
-          echo "--- TEST FILE TYPE ---"
-          file tests-e2e/auth-and-crud.spec.cjs || true
-          echo "--- TEST FILE CONTENT START ---"
-          sed -n '1,200p' tests-e2e/auth-and-crud.spec.cjs
-          echo "--- TEST FILE CONTENT END ---"
-
-      - name: Debug working directory
-        run: |
-          echo "Running E2E tests in $(pwd)"
-          echo "--- Files:"
-          ls -al
-          echo "--- tests-e2e directory:"
-          ls -al tests-e2e
-
+      # -------------------------------
+      # ✅ Run Playwright Tests
+      # -------------------------------
       - name: Run E2E tests
         working-directory: ${{ github.workspace }}
         run: |
           echo "Running E2E tests in $(pwd)"
-          node ./node_modules/@playwright/test/cli.js test --config=playwright.config.cjs --project=chromium-headless
+          node ./node_modules/@playwright/test/cli.js test \
+            --config=playwright.config.cjs \
+            --project=chromium-headless
 
+      # -------------------------------
+      # ✅ Upload reports/artifacts
+      # -------------------------------
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
@@ -172,9 +130,28 @@ jobs:
             playwright-report
             test-results
 
+      # -------------------------------
+      # ✅ Cleanup
+      # -------------------------------
       - name: Cleanup
         if: always()
         working-directory: ${{ github.workspace }}
         run: |
           kill $(cat backend.pid) || true
           kill $(cat frontend.pid) || true
+
+  # -------------------------------
+  # ✅ DAILY JOB (schedule)
+  # -------------------------------
+  daily-e2e:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps: *e2e-steps # ← переиспользуем шаги
+
+  # -------------------------------
+  # ✅ MANUAL JOB (workflow_dispatch)
+  # -------------------------------
+  manual-e2e:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps: *e2e-steps # ← переиспользуем шаги
