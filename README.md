@@ -57,7 +57,9 @@
   <img src="https://img.shields.io/github/repo-size/watsonik/task-tracker?color=8b5cf6" alt="Repo Size" />
 
   <!-- License -->
-  <img src="https://img.shields.io/badge/License-MIT-blue?logo=open-source-initiative&logoColor=white" alt="License" />
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-blue?logo=open-source-initiative&logoColor=white" alt="License" />
+  </a>
 
 </p>
 
